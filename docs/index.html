@@ -109,13 +109,13 @@
       </table>
     </div>
 
-    <div class="footer">Hermes Agent · datos estáticos desde /docs/data.json · actualización manual</div>
+    <div class="footer">Hermes Agent · datos estáticos desde /data/data.json · actualización manual</div>
   </div>
 
   <script>
     async function loadData() {
       try {
-        const res = await fetch('/docs/data.json');
+        const res = await fetch('./data/data.json');
         const data = await res.json();
 
         document.getElementById('ts').textContent = data.last_updated || '--';
@@ -125,12 +125,12 @@
         const cov = data.bank.current ? (data.bank.current / 5).toFixed(1) : '0';
         document.getElementById('cov').textContent = cov + 'x';
 
-        document.getElementById('diaEscalera').textContent = (data.escalera.day || 0);
-        document.getElementById('pickHoy').textContent = data.escalera.pick_today || 'Sin pick';
+        document.getElementById('diaEscalera').textContent = (data.escalera.current_day || 0);
+        document.getElementById('pickHoy').textContent = data.escalera.today_pick || 'Sin pick';
         document.getElementById('estadoEscalera').textContent = data.escalera.status || 'En espera';
 
         const tbody = document.getElementById('historial');
-        if (!data.picks.length) {
+        if (!Array.isArray(data.picks) || !data.picks.length) {
           tbody.innerHTML = '<tr><td class="empty" colspan="6">Sin registros</td></tr>';
         } else {
           tbody.innerHTML = data.picks.map(p => `
@@ -146,7 +146,7 @@
         }
 
         const ex = document.getElementById('excluidos');
-        if (!data.excluded.length) {
+        if (!Array.isArray(data.excluded) || !data.excluded.length) {
           ex.innerHTML = '<tr><td class="empty" colspan="4">Sin excluidos aún</td></tr>';
         } else {
           ex.innerHTML = data.excluded.map(p => `

@@ -1,0 +1,33 @@
+{
+  "bank": {
+    "currency": "USD",
+    "initial": 25.00,
+    "current": 25.00,
+    "roi": -100.0,
+    "goal_monthly": 15.00,
+    "stake_pct": 3,
+    "stop_loss_pct": 20,
+    "min_odds": 1.8,
+    "max_drawdown_usd": 5.00
+  },
+  "escalera": {
+    "target_odds_min": 1.22,
+    "target_odds_max": 1.25,
+    "days_goal": 30,
+    "current_day": 0,
+    "today_pick": null,
+    "status": "En espera de pick calificado",
+    "last_update": ""
+  },
+  "picks": [],
+  "excluded": [
+    {
+      "date": "2026-06-11",
+      "match": "Mexico vs South Africa",
+      "odds": 1.42,
+      "reason": "Fuera de rango 1.22-1.25",
+      "market": "Over 1.5"
+    }
+  ],
+  "last_updated": "2026-06-10T22:00:00-03:00"
+}

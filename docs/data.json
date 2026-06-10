@@ -1,0 +1,15 @@
+{
+  "bank": {
+    "currency": "USD",
+    "initial": 25.00,
+    "current": 25.00,
+    "roi": -100.0
+  },
+  "escalera": {
+    "target_odds_min": 1.22,
+    "target_odds_max": 1.25
+  },
+  "picks": [],
+  "excluded": [],
+  "last_updated": ""
+}

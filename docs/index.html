@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hermes Betting</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #0f1115;
+      color: #e6e8eb;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      padding: 24px;
+      line-height: 1.5;
+    }
+    .container { max-width: 1100px; margin: 0 auto; }
+    h1 { font-size: 24px; margin-bottom: 4px; }
+    .sub { color: #8b919d; font-size: 13px; margin-bottom: 24px; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    @media (max-width: 800px) { .grid { grid-template-columns: 1fr; } }
+    .card {
+      background: #1a1d23;
+      border: 1px solid #25282e;
+      border-radius: 12px;
+      padding: 16px;
+    }
+    .card h2 { font-size: 14px; text-transform: uppercase; letter-spacing: 0.08em; color: #8b919d; margin-bottom: 12px; }
+    .row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #25282e; }
+    .row:last-child { border-bottom: none; }
+    .label { color: #8b919d; font-size: 13px; }
+    .value { font-weight: 600; font-variant-numeric: tabular-nums; }
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .badge-ok { background: #22362e; color: #4ade80; }
+    .badge-warn { background: #3a2e22; color: #fca311; }
+    .badge-nope { background: #3a2230; color: #ff5c8a; }
+    table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 13px; }
+    th { text-align: left; color: #8b919d; font-weight: 500; padding: 8px 6px; border-bottom: 1px solid #25282e; }
+    td { padding: 8px 6px; border-bottom: 1px solid #25282e; }
+    .empty { color: #8b919d; font-style: italic; padding: 8px 6px; }
+    .footer { margin-top: 20px; font-size: 12px; color: #6b7280; }
+    a { color: #60a5fa; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Hermes Betting</h1>
+    <div class="sub">Actualización: <span id="ts">--</span> · Bank objetivo: 3x costo infra/mes</div>
+
+    <div class="grid">
+      <div class="card">
+        <h2>🏦 Bank Supervivencia</h2>
+        <div class="row"><span class="label">Inversión inicial</span><span class="value" id="init">--</span></div>
+        <div class="row"><span class="label">Bank actual</span><span class="value" id="cur">--</span></div>
+        <div class="row"><span class="label">ROI Pipeline</span><span class="value" id="roi">--</span></div>
+        <div class="row"><span class="label">Cobertura costos</span><span class="value" id="cov">--</span></div>
+      </div>
+
+      <div class="card">
+        <h2>🪜 Escalera 1.22–1.25</h2>
+        <div id="escalera">
+          <div class="row"><span class="label">Objetivo</span><span class="value">30 días · cuota 1.22–1.25</span></div>
+          <div class="row"><span class="label">Día actual</span><span class="value" id="diaEscalera">0</span></div>
+          <div class="row"><span class="label">Pick hoy</span><span class="value" id="pickHoy">--</span></div>
+          <div class="row"><span class="label">Estado</span><span class="value" id="estadoEscalera">--</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:20px;">
+      <h2>📋 Historial</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Partido</th>
+            <th>Mercado</th>
+            <th>Cuota</th>
+            <th>Resultado</th>
+            <th>Flujo</th>
+            <th>Nota</th>
+          </tr>
+        </thead>
+        <tbody id="historial">
+          <tr><td class="empty" colspan="6">Sin registros</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card" style="margin-top:20px;">
+      <h2>🚫 Excluidos del día</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Partido</th>
+            <th>Cuota book</th>
+            <th>Motivo</th>
+          </tr>
+        </thead>
+        <tbody id="excluidos">
+          <tr><td class="empty" colspan="4">Sin excluidos aún</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="footer">Hermes Agent · datos estáticos desde /docs/data.json · actualización manual</div>
+  </div>
+
+  <script>
+    async function loadData() {
+      try {
+        const res = await fetch('/docs/data.json');
+        const data = await res.json();
+
+        document.getElementById('ts').textContent = data.last_updated || '--';
+        document.getElementById('init').textContent = '$' + Number(data.bank.initial).toFixed(2);
+        document.getElementById('cur').textContent = '$' + Number(data.bank.current).toFixed(2);
+        document.getElementById('roi').textContent = (data.bank.roi > 0 ? '+' : '') + Number(data.bank.roi).toFixed(1) + '%';
+        const cov = data.bank.current ? (data.bank.current / 5).toFixed(1) : '0';
+        document.getElementById('cov').textContent = cov + 'x';
+
+        document.getElementById('diaEscalera').textContent = (data.escalera.day || 0);
+        document.getElementById('pickHoy').textContent = data.escalera.pick_today || 'Sin pick';
+        document.getElementById('estadoEscalera').textContent = data.escalera.status || 'En espera';
+
+        const tbody = document.getElementById('historial');
+        if (!data.picks.length) {
+          tbody.innerHTML = '<tr><td class="empty" colspan="6">Sin registros</td></tr>';
+        } else {
+          tbody.innerHTML = data.picks.map(p => `
+            <tr>
+              <td>${p.date}</td>
+              <td>${p.match}</td>
+              <td>${p.market}</td>
+              <td>${Number(p.odds).toFixed(2)}</td>
+              <td><span class="badge ${p.result === 'Ganada' ? 'badge-ok' : p.result === 'Pendiente' ? 'badge-warn' : 'badge-nope'}">${p.result}</span></td>
+              <td>${p.flow}</td>
+              <td>${p.note || ''}</td>
+            </tr>`).join('');
+        }
+
+        const ex = document.getElementById('excluidos');
+        if (!data.excluded.length) {
+          ex.innerHTML = '<tr><td class="empty" colspan="4">Sin excluidos aún</td></tr>';
+        } else {
+          ex.innerHTML = data.excluded.map(p => `
+            <tr>
+              <td>${p.date}</td>
+              <td>${p.match}</td>
+              <td>${Number(p.odds).toFixed(2)}</td>
+              <td>${p.reason}</td>
+            </tr>`).join('');
+        }
+      } catch (e) {
+        document.getElementById('historial').innerHTML = '<tr><td class="empty" colspan="6">Error cargando datos</td></tr>';
+      }
+    }
+
+    loadData();
+  </script>
+</body>
+</html>
